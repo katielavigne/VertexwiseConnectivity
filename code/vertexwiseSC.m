@@ -1,4 +1,4 @@
-function vertexwiseSC_parallel(study, subid, mm, n, effic, stage)
+function vertexwiseSC(study, subid, mm, n, effic, stage)
 % VERTEX-WISE STRUCTURAL COVARIANCE
 %   This script assumes that the datasets are on your path.
 %
