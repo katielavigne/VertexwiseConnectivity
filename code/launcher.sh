@@ -8,7 +8,7 @@ MMS="10 20 40"
 #TODO: change this to match the basepath of your current project/system
 BP="/project/6008063/katie-gkiar/"
 CMD="matlab -nodesktop -nosplash -r "
-ALLSTAGE="addpath(\"${BP}code/\", \"${BP}code/surfstat/\", \"${BP}code/BrainConnectivityToolbox/2017_01_15_BCT/\");"
+ALLSTAGE="addpath(\"${BP}data/\",  \"${BP}code/\", \"${BP}code/surfstat/\", \"${BP}code/BrainConnectivityToolbox/2017_01_15_BCT/\");"
 
 mkdir -p ./logs/
 cd ./logs/
