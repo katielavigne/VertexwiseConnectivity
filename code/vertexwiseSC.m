@@ -24,8 +24,8 @@ function SC_preproc(study, mm)
   %% LOAD DATA (35 seconds)
   switch study
       case 'Insight'
-          load InsightCT_0mm_20subjs.mat
-          load InsightBehData_20subjs.mat
+          load InsightCT_0mm.mat
+          load InsightBehData.mat
       case 'NUSDAST'
           load NUSDAST_CT_0mm.mat
           load NUSDASTBehData.mat
@@ -83,7 +83,7 @@ function SC_map(study, subid, mm, n)
 
   switch study
       case 'Insight'
-          load InsightBehData_20subjs.mat
+          load InsightBehData.mat
       case 'NUSDAST'
           load NUSDASTBehData.mat
   end%switch
@@ -147,7 +147,7 @@ function SC_reduce(study, mm, n)
 % Merges feature tables and performs group comparisons
   switch study
       case 'Insight'
-          load InsightBehData_20subjs.mat
+          load InsightBehData.mat
       case 'NUSDAST'
           load NUSDASTBehData.mat
   end%switch
