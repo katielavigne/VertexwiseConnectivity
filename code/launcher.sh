@@ -28,7 +28,7 @@ then
     STAGE1="vertexwiseSC(\"${DSET}\", 1, ${mm}, 1, 1);"
     cat << TMP > ${SP}/exec_stage1_${mm}mm.sh
 #!/bin/bash
-#SBATCH --time 00:02:00
+#SBATCH --time 00:05:00
 #SBATCH --mem 12G
 #SBATCH --account rpp-aevans-ab
 
@@ -55,7 +55,7 @@ then
         cat << TMP > ${SP}/exec_stage2_net${net}_${sub}_${mm}mm.sh
 #!/usr/bin/env bash
 #SBATCH --time 01:30:00
-#SBATCH --mem 24G
+#SBATCH --mem 20G
 #SBATCH --account rpp-aevans-ab
 
 cd ${BP}
