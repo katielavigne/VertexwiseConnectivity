@@ -64,7 +64,7 @@ function SC_preproc(study, mm)
       slm = SurfStatLinMod(parcellated_network, M);
       resid = parcellated_network - slm.X*slm.coef;
   
-      outfname = "./resid/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_resid.mat";
+      outfname = "./data/resid/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_resid.mat";
       save(outfname, 'resid', '-v7.3')
   
   end%for
@@ -94,7 +94,7 @@ function SC_map(study, subid, mm, n)
   groups = unique(beh.Group);
   ngroups = size(groups,1);
 
-  infname = "./resid/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_resid.mat";
+  infname = "./data/resid/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_resid.mat";
   load(infname)
 
   % Group Matrices (~ 25 seconds)
@@ -131,10 +131,8 @@ function SC_map(study, subid, mm, n)
   gr.S = strengths_und(normW);
   display("Rich Club Coefficients (Weighted)")
   gr.RCW = rich_club_wu(normW);
-  display("Rich Club Coefficients (unWeighted)")
-  gr.RCB = rich_club_bu(normW > 0);
 
-  outfname = "./feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_" + subid + "_features.mat";
+  outfname = "./data/feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_" + subid + "_features.mat";
   save(outfname, 'gr', '-v7.3')
 
   % Saved above: graph network features
@@ -168,9 +166,8 @@ function SC_reduce(study, mm, n)
   g.PC = zeros(nverts, nsubs);
   g.S = zeros(nverts, nsubs);
   g.RCW = zeros(nverts, nsubs);
-  g.RCB = zeros(nverts, nsubs);
 
-  infname_base = "./feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_";
+  infname_base = "./data/feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_";
   for subid = 1:nsubs
     infname = infname_base + subid + "_features.mat";
     load(infname)
@@ -181,7 +178,6 @@ function SC_reduce(study, mm, n)
     g.PC(:, subid) = gr.PC;
     g.S(:, subid) = gr.S;
     g.RCW(:, subid) = gr.RCW;
-    g.RCB(:, subid) = gr.RCB;
   end%for
   gr = g;
 
@@ -209,7 +205,7 @@ function SC_reduce(study, mm, n)
   r.ttest = t;
   r.corr = c;
 
-  outfname = "./results/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_results.mat";
+  outfname = "./data/stats/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_results.mat";
   save(outfname, 'r', '-v7.3')
 
   % Saved above: t-test results and correlations
