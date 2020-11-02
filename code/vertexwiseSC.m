@@ -1,4 +1,4 @@
-function vertexwiseSC(study, subid, mm, n, effic, stage)
+function vertexwiseSC(study, subid, mm, n, stage)
 % VERTEX-WISE STRUCTURAL COVARIANCE
 %   This script assumes that the datasets are on your path.
 %
@@ -7,20 +7,16 @@ function vertexwiseSC(study, subid, mm, n, effic, stage)
 %    - subid: int ; row number (i.e. from 1:length of dataset)
 %    - mm: int ; spatial smoothing in mm (i.e. one of {10, 20, 40})
 %    - n: int ; index of which network to process (i.e. from 1:7)
-%    - effic: str ; dictates whether or not to compute efficiency (the word "true" or "false")
 %    - stage: int ; dictates what processing stage we're in (i.e. from 1:3)
 
   %% House-keeping
-  % Turn strings into logicals
-  effic = eval(effic);
-  
   switch stage
     case 1
       SC_preproc(study, mm)
     case 2
-      SC_map(study, subid, mm, n, effic)
+      SC_map(study, subid, mm, n)
     case 3
-      SC_reduce(study, mm, n, effic)
+      SC_reduce(study, mm, n)
   end % endswitch
 end % endfunction
 
@@ -82,7 +78,7 @@ function SC_preproc(study, mm)
 
 end%function
 
-function SC_map(study, subid, mm, n, effic)
+function SC_map(study, subid, mm, n)
 % Computes features for a subject
 
   switch study
@@ -133,13 +129,10 @@ function SC_map(study, subid, mm, n, effic)
   gr.PC = participation_coef(normW,gr.Ci);
   display("Strength")
   gr.S = strengths_und(normW);
-  display("Betweenness Centrality")
-  gr.B = betweenness_wei(normW);
-
-  % Global Efficiency (3 days)
-  if (effic == true)
-    gr.E = efficiency_wei(normW);
-  end%if
+  display("Rich Club Coefficients (Weighted)")
+  gr.RCW = rich_club_wu(normW);
+  display("Rich Club Coefficients (unWeighted)")
+  gr.RCB = rich_club_bu(normW > 0);
 
   outfname = "./feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_" + subid + "_features.mat";
   save(outfname, 'gr', '-v7.3')
@@ -152,7 +145,7 @@ function SC_map(study, subid, mm, n, effic)
 
 end%function
 
-function SC_reduce(study, mm, n, effic)
+function SC_reduce(study, mm, n)
 % Merges feature tables and performs group comparisons
   switch study
       case 'Insight'
@@ -174,7 +167,8 @@ function SC_reduce(study, mm, n, effic)
   g.Z = zeros(nverts, nsubs);
   g.PC = zeros(nverts, nsubs);
   g.S = zeros(nverts, nsubs);
-  g.B = zeros(nverts, nsubs);
+  g.RCW = zeros(nverts, nsubs);
+  g.RCB = zeros(nverts, nsubs);
 
   infname_base = "./feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_";
   for subid = 1:nsubs
@@ -186,7 +180,8 @@ function SC_reduce(study, mm, n, effic)
     g.Z(:, subid) = gr.Z;
     g.PC(:, subid) = gr.PC;
     g.S(:, subid) = gr.S;
-    g.B(:, subid) = gr.B;
+    g.RCW(:, subid) = gr.RCW;
+    g.RCB(:, subid) = gr.RCB;
   end%for
   gr = g;
 
@@ -198,27 +193,13 @@ function SC_reduce(study, mm, n, effic)
   [t.mod.hu, t.mod.pu] = ttest2(t.mod.control, t.mod.patient,'Vartype','unequal');
 
   % Correlate with Symptoms/Cognition
+  % TODO: add all other graph features alongside Modularity
   c.mod.labels = {'Modularity', 'Verbal Memory', 'Visual Memory', 'Working Memory', 'Processing Speed', 'Executive Function', 'Attention', 'Social Cognition'};
   [c.mod.r,c.mod.p] = corrcoef([gr.Q, beh.VerbMem, beh.VisMem, beh.WorkMem, beh.ProcSpeed, beh.ExecFunc, beh.Att, beh.SocCog], 'Rows', 'pairwise');
 
   c.mod.labels_clin = {'Modularity', 'SAPS', 'SANS'};
   pt = logical(Group.Patient);
   [c.mod.r_clin,c.mod.p_clin] = corrcoef([gr.Q(pt), beh.SAPS_35(pt), beh.SANS_27(pt)], 'Rows', 'pairwise');
-
-  % Repeat for efficiency, if it was calculated
-  if (effic == true)
-    t.eff.patient = gr.E(logical(Group.Patient));
-    t.eff.ccontrol = gr.E(logical(Group.Control));
-
-    [t.eff.h, t.eff.p, t.eff.ci, t.eff.stats] = ttest2(t.eff.control, t.eff.patient);
-    [t.eff.hu, t.eff.pu] = ttest2(t.eff.control, t.eff.patient,'Vartype','unequal');
-
-    c.eff.labels = {'Modularity', 'Verbal Memory', 'Visual Memory', 'Working Memory', 'Processing Speed', 'Executive Function', 'Attention', 'Social Cognition'};
-    [c.eff.r,c.eff.p] = corrcoef([gr.E, beh.VerbMem, beh.VisMem, beh.WorkMem, beh.ProcSpeed, beh.ExecFunc, beh.Att, beh.SocCog], 'Rows', 'pairwise');
-
-    c.eff.labels_clin = {'Modularity', 'SAPS', 'SANS'};
-    [c.eff.r_clin,c.eff.p_clin] = corrcoef([gr.E beh.SAPS_35, beh.SANS_27], 'Rows', 'pairwise');
-  end%if
 
   % Data organization
   sname = ['smooth' num2str(mm)];
