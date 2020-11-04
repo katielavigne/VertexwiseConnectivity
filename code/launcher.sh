@@ -4,11 +4,12 @@
 STAGE=$1
 
 DSET="Insight"
+
 N_NETS=7
-N_SUBS=20
+N_SUBS=172
 MMS="10 20 40"
 
-#TODO: change this to match the basepath of your current project/system
+#TODO : change this to match the basepath of your current project/system
 BP="/project/6008063/katie-gkiar/VertexwiseConnectivity/"
 CMD="matlab -nodesktop -nosplash -r "
 ALLSTAGE="addpath(\"${BP}data/\",  \"${BP}code/\", \"${BP}code/surfstat/\", \"${BP}code/BrainConnectivityToolbox/2017_01_15_BCT/\");"
@@ -29,7 +30,7 @@ then
     cat << TMP > ${SP}/exec_stage1_${mm}mm.sh
 #!/bin/bash
 #SBATCH --time 00:05:00
-#SBATCH --mem 12G
+#SBATCH --mem 16G
 #SBATCH --account rpp-aevans-ab
 
 cd ${BP}
@@ -55,7 +56,7 @@ then
         cat << TMP > ${SP}/exec_stage2_net${net}_${sub}_${mm}mm.sh
 #!/usr/bin/env bash
 #SBATCH --time 01:30:00
-#SBATCH --mem 20G
+#SBATCH --mem 30G
 #SBATCH --account rpp-aevans-ab
 
 cd ${BP}
@@ -64,7 +65,6 @@ ${CMD} '${ALLSTAGE} ${STAGE2} exit'
 TMP
         chmod +x ${SP}/exec_stage2_net${net}_${sub}_${mm}mm.sh
         sbatch ${SP}/exec_stage2_net${net}_${sub}_${mm}mm.sh
-        exit 0
       done
     done
   done
