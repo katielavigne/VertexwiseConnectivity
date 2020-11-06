@@ -144,7 +144,7 @@ function SC_map(study, subid, mm, n)
 end%function
 
 function SC_reduce(study, mm, n)
-% Merges feature tables and performs group comparisons
+% Merges feature tables
   switch study
       case 'Insight'
           load InsightBehData.mat
@@ -165,7 +165,7 @@ function SC_reduce(study, mm, n)
   g.Z = zeros(nverts, nsubs);
   g.PC = zeros(nverts, nsubs);
   g.S = zeros(nverts, nsubs);
-  g.RCW = zeros(nverts, nsubs);
+  g.RCW = zeros(nverts-1, nsubs);
 
   infname_base = "./data/feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_";
   for subid = 1:nsubs
@@ -177,10 +177,30 @@ function SC_reduce(study, mm, n)
     g.Z(:, subid) = gr.Z;
     g.PC(:, subid) = gr.PC;
     g.S(:, subid) = gr.S;
-    g.RCW(:, subid) = gr.RCW;
+    g.RCW(:, subid) = gr.RCW.';
   end%for
   gr = g;
 
+  outfname = "./data/netfeats/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_features.mat";
+  save(outfname, 'gr', '-v7.3')
+end
+
+function SC_groupComparison(study, mm, n)
+% Performs group comparisons
+  switch study
+      case 'Insight'
+          load InsightBehData.mat
+      case 'NUSDAST'
+          load NUSDASTBehData.mat
+  end%switch
+  load Yeo7networks_info.mat
+  nverts = info.numverts(n);
+  nsubs = size(beh.Group, 1);
+
+  infname = "./data/netfeats/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_features.mat";
+  load(infname)
+
+  % TODO: update to work for all features, this is just here for provenance at this point
   % Compare Groups
   t.mod.patient = gr.Q(logical(Group.Patient));
   t.mod.control = gr.Q(logical(Group.Control));
