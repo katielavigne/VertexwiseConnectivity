@@ -32,7 +32,7 @@ function SC_preproc(study, mm)
   end%switch
   load CIVETavsurf.mat
   load CIVETmask.mat
-  load Yeo7networks_info.mat
+  load Yeo7networks_info2.mat
 
   %% ANALYSIS
   residvars = zeros(size(Y, 1),3);
@@ -87,7 +87,7 @@ function SC_map(study, subid, mm, n)
       case 'NUSDAST'
           load NUSDASTBehData.mat
   end%switch
-  load Yeo7networks_info.mat
+  load Yeo7networks_info2.mat
   nverts = info.numverts(n);
   
   Group = term(beh.Group);
@@ -129,8 +129,10 @@ function SC_map(study, subid, mm, n)
   gr.PC = participation_coef(normW,gr.Ci);
   display("Strength")
   gr.S = strengths_und(normW);
-  display("Rich Club Coefficients (Weighted)")
-  gr.RCW = rich_club_wu(normW);
+  display("Eigen Spectrum")
+  [u, s, v] = svd(normW);
+  ss = diag(s);
+  gr.ES = ss(1) / sum(ss(2:nverts));
 
   outfname = "./data/feat/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_" + subid + "_features.mat";
   save(outfname, 'gr', '-v7.3')
@@ -151,7 +153,7 @@ function SC_reduce(study, mm, n)
       case 'NUSDAST'
           load NUSDASTBehData.mat
   end%switch
-  load Yeo7networks_info.mat
+  load Yeo7networks_info2.mat
   nverts = info.numverts(n);
   nsubs = size(beh.Group, 1);
   
@@ -193,7 +195,7 @@ function SC_groupComparison(study, mm, n)
       case 'NUSDAST'
           load NUSDASTBehData.mat
   end%switch
-  load Yeo7networks_info.mat
+  load Yeo7networks_info2.mat
   nverts = info.numverts(n);
   nsubs = size(beh.Group, 1);
 
