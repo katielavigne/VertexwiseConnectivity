@@ -12,7 +12,7 @@ study = 'Insight';
 behfile = 'InsightBehData.mat';
 
 % Code
-load(fullfile(loc, behfile))
+load(behfile)
 
 for i = 1:size(sm,1)
     for j = 1:size(nets,1)
@@ -25,3 +25,4 @@ for i = 1:size(sm,1)
 end
 
 writetable(beh,fullfile(pwd, 'vertexConnectivity_results.csv'))
+save('vertexConnectivity_results.mat')
