@@ -102,6 +102,7 @@ function SC_map(study, subid, mm, n)
   for gr = 1:ngroups 
       grname = groups(gr);
       grCT = resid(Group.(grname) == 1, :);
+      n_group(gr) = size(grCT,1);
       % Correlations (~ 9 - 20 seconds)
       corr(:,:,gr) = corrcoef(grCT);
       corr(:,:,gr) = corr(:,:,gr) - diag(diag(corr(:,:,gr)));
@@ -112,21 +113,21 @@ function SC_map(study, subid, mm, n)
   corrLOO = corrcoef(resid_LOO);
 
   if strcmp(beh.Group{subid}, 'Control')
-    W = corr(:,:,1) - corrLOO;
+    W = (n_group(1)*corr(:,:,1)) - ((n_group(1)-1)*corrLOO);
   elseif strcmp(beh.Group{subid}, 'Patient')
-    W = corr(:,:,2) - corrLOO;
+    W = (n_group(2)*corr(:,:,2)) - ((n_group(2)-2)*corrLOO);
   end
   normW = W - min(W(:));
   normW = normW./max(normW(:));          
 
   gr = struct();
-  % Modularity (~30 mins)
-  display("Modularity")
-  [gr.Ci, gr.Q] = modularity_und(normW);
-  display("Module Degree")
-  gr.Z = module_degree_zscore(normW, gr.Ci);
-  display("Participation Coefficient")
-  gr.PC = participation_coef(normW,gr.Ci);
+%   % Modularity (~30 mins)
+%   display("Modularity")
+%   [gr.Ci, gr.Q] = modularity_und(normW);
+%   display("Module Degree")
+%   gr.Z = module_degree_zscore(normW, gr.Ci);
+%   display("Participation Coefficient")
+%   gr.PC = participation_coef(normW,gr.Ci);
   display("Strength")
   gr.S = strengths_und(normW);
   display("Eigen Spectrum")
@@ -162,10 +163,10 @@ function SC_reduce(study, mm, n)
   ngroups = size(groups,1);
 
   g = struct();
-  g.Ci = zeros(nverts, nsubs);
-  g.Q = zeros(nsubs, 1);
-  g.Z = zeros(nverts, nsubs);
-  g.PC = zeros(nverts, nsubs);
+%   g.Ci = zeros(nverts, nsubs);
+%   g.Q = zeros(nsubs, 1);
+%   g.Z = zeros(nverts, nsubs);
+%   g.PC = zeros(nverts, nsubs);
   g.S = zeros(nverts, nsubs);
   g.RCW = zeros(nverts-1, nsubs);
 
@@ -174,10 +175,10 @@ function SC_reduce(study, mm, n)
     infname = infname_base + subid + "_features.mat";
     load(infname)
 
-    g.Ci(:, subid) = gr.Ci;
-    g.Q(subid) = gr.Q;
-    g.Z(:, subid) = gr.Z;
-    g.PC(:, subid) = gr.PC;
+%     g.Ci(:, subid) = gr.Ci;
+%     g.Q(subid) = gr.Q;
+%     g.Z(:, subid) = gr.Z;
+%     g.PC(:, subid) = gr.PC;
     g.S(:, subid) = gr.S;
     g.RCW(:, subid) = gr.RCW.';
   end%for
@@ -202,22 +203,22 @@ function SC_groupComparison(study, mm, n)
   infname = "./data/netfeats/vertexConnectivity_" + study + "_" + mm + "_" + info.abbreviation(n) + "_features.mat";
   load(infname)
 
-  % TODO: update to work for all features, this is just here for provenance at this point
-  % Compare Groups
-  t.mod.patient = gr.Q(logical(Group.Patient));
-  t.mod.control = gr.Q(logical(Group.Control));
-  
-  [t.mod.h, t.mod.p, t.mod.ci, t.mod.stats] = ttest2(t.mod.control, t.mod.patient);
-  [t.mod.hu, t.mod.pu] = ttest2(t.mod.control, t.mod.patient,'Vartype','unequal');
-
-  % Correlate with Symptoms/Cognition
-  % TODO: add all other graph features alongside Modularity
-  c.mod.labels = {'Modularity', 'Verbal Memory', 'Visual Memory', 'Working Memory', 'Processing Speed', 'Executive Function', 'Attention', 'Social Cognition'};
-  [c.mod.r,c.mod.p] = corrcoef([gr.Q, beh.VerbMem, beh.VisMem, beh.WorkMem, beh.ProcSpeed, beh.ExecFunc, beh.Att, beh.SocCog], 'Rows', 'pairwise');
-
-  c.mod.labels_clin = {'Modularity', 'SAPS', 'SANS'};
-  pt = logical(Group.Patient);
-  [c.mod.r_clin,c.mod.p_clin] = corrcoef([gr.Q(pt), beh.SAPS_35(pt), beh.SANS_27(pt)], 'Rows', 'pairwise');
+%   % TODO: update to work for all features, this is just here for provenance at this point
+%   % Compare Groups
+%   t.mod.patient = gr.Q(logical(Group.Patient));
+%   t.mod.control = gr.Q(logical(Group.Control));
+%   
+%   [t.mod.h, t.mod.p, t.mod.ci, t.mod.stats] = ttest2(t.mod.control, t.mod.patient);
+%   [t.mod.hu, t.mod.pu] = ttest2(t.mod.control, t.mod.patient,'Vartype','unequal');
+% 
+%   % Correlate with Symptoms/Cognition
+%   % TODO: add all other graph features alongside Modularity
+%   c.mod.labels = {'Modularity', 'Verbal Memory', 'Visual Memory', 'Working Memory', 'Processing Speed', 'Executive Function', 'Attention', 'Social Cognition'};
+%   [c.mod.r,c.mod.p] = corrcoef([gr.Q, beh.VerbMem, beh.VisMem, beh.WorkMem, beh.ProcSpeed, beh.ExecFunc, beh.Att, beh.SocCog], 'Rows', 'pairwise');
+% 
+%   c.mod.labels_clin = {'Modularity', 'SAPS', 'SANS'};
+%   pt = logical(Group.Patient);
+%   [c.mod.r_clin,c.mod.p_clin] = corrcoef([gr.Q(pt), beh.SAPS_35(pt), beh.SANS_27(pt)], 'Rows', 'pairwise');
 
   % Data organization
   sname = ['smooth' num2str(mm)];
